@@ -1,0 +1,97 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validação de Especialidade
+    function isValidSpecialty(data) {
+      return data.name is string && data.name.size() >= 2 && data.name.size() <= 80
+        && data.active is bool
+        && (!('description' in data) || data.description == null || (data.description is string && data.description.size() <= 300));
+    }
+
+    // Validação de Médico
+    function isValidDoctor(data) {
+      return data.name is string && data.name.size() >= 3 && data.name.size() <= 120
+        && data.crm is string && data.crm.size() >= 4 && data.crm.size() <= 20
+        && data.specialtyId is string
+        && data.phone is string && data.phone.size() >= 10 && data.phone.size() <= 20
+        && data.email is string
+        && data.active is bool;
+    }
+
+    // Validação de Paciente
+    function isValidPatient(data) {
+      return data.name is string && data.name.size() >= 3 && data.name.size() <= 120
+        && data.cpf is string && data.cpf.size() >= 11 && data.cpf.size() <= 14
+        && data.birthDate is string
+        && (data.gender == 'MASCULINO' || data.gender == 'FEMININO' || data.gender == 'OUTRO')
+        && data.phone is string && data.phone.size() >= 10 && data.phone.size() <= 20
+        && data.email is string
+        && (!('address' in data) || data.address == null || (data.address is string && data.address.size() <= 250))
+        && (!('notes' in data) || data.notes == null || (data.notes is string && data.notes.size() <= 1000));
+    }
+
+    // Validação de Consulta
+    function isValidAppointment(data) {
+      return data.patientId is string
+        && data.doctorId is string
+        && data.date is string && data.date.size() == 10
+        && data.time is string && data.time.size() == 5
+        && data.reason is string && data.reason.size() >= 3 && data.reason.size() <= 300
+        && (data.status == 'AGENDADA' || data.status == 'CONFIRMADA' || data.status == 'REALIZADA' || data.status == 'CANCELADA' || data.status == 'NAO_COMPARECEU')
+        && (!('duration' in data) || data.duration is number)
+        && (!('notes' in data) || data.notes == null || (data.notes is string && data.notes.size() <= 1000));
+    }
+
+    // Regras de Especialidades
+    match /specialties/{specialtyId} {
+      allow read: if true;
+      allow create: if isValidId(specialtyId) && isValidSpecialty(incoming());
+      allow update: if isValidId(specialtyId) && isValidSpecialty(incoming());
+      allow delete: if isValidId(specialtyId);
+    }
+
+    // Regras de Médicos
+    match /doctors/{doctorId} {
+      allow read: if true;
+      allow create: if isValidId(doctorId) && isValidDoctor(incoming());
+      allow update: if isValidId(doctorId) && isValidDoctor(incoming());
+      allow delete: if isValidId(doctorId);
+    }
+
+    // Regras de Pacientes
+    match /patients/{patientId} {
+      allow read: if true;
+      allow create: if isValidId(patientId) && isValidPatient(incoming());
+      allow update: if isValidId(patientId) && isValidPatient(incoming());
+      allow delete: if isValidId(patientId);
+    }
+
+    // Regras de Consultas
+    match /appointments/{appointmentId} {
+      allow read: if true;
+      allow create: if isValidId(appointmentId) && isValidAppointment(incoming());
+      allow update: if isValidId(appointmentId) && isValidAppointment(incoming());
+      // Protege contra exclusão de consultas realizadas no banco
+      allow delete: if isValidId(appointmentId) && existing().status != 'REALIZADA';
+    }
+
+    // Fallback de conexão para teste
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+  }
+}

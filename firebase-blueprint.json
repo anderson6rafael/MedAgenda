@@ -1,0 +1,94 @@
+{
+  "entities": {
+    "Specialty": {
+      "title": "Specialty",
+      "description": "Especialidade médica cadastrada na clínica",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "description": { "type": "string", "maxLength": 300 },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "active"]
+    },
+    "Doctor": {
+      "title": "Doctor",
+      "description": "Médico do corpo clínico da clínica",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "minLength": 3, "maxLength": 120 },
+        "crm": { "type": "string", "minLength": 4, "maxLength": 20 },
+        "specialtyId": { "type": "string" },
+        "phone": { "type": "string", "minLength": 10, "maxLength": 20 },
+        "email": { "type": "string", "format": "email" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "crm", "specialtyId", "phone", "email", "active"]
+    },
+    "Patient": {
+      "title": "Patient",
+      "description": "Paciente atendido pela clínica",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "minLength": 3, "maxLength": 120 },
+        "cpf": { "type": "string", "minLength": 11, "maxLength": 14 },
+        "birthDate": { "type": "string" },
+        "gender": { "type": "string", "enum": ["MASCULINO", "FEMININO", "OUTRO"] },
+        "phone": { "type": "string", "minLength": 10, "maxLength": 20 },
+        "email": { "type": "string", "format": "email" },
+        "address": { "type": "string", "maxLength": 250 },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "cpf", "birthDate", "gender", "phone", "email"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Consulta médica agendada",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "patientId": { "type": "string" },
+        "doctorId": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string", "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$" },
+        "duration": { "type": "number" },
+        "reason": { "type": "string", "minLength": 3, "maxLength": 300 },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "status": {
+          "type": "string",
+          "enum": ["AGENDADA", "CONFIRMADA", "REALIZADA", "CANCELADA", "NAO_COMPARECEU"]
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "patientId", "doctorId", "date", "time", "reason", "status"]
+    }
+  },
+  "firestore": {
+    "/specialties/{specialtyId}": {
+      "schema": "Specialty",
+      "description": "Coleção de especialidades médicas"
+    },
+    "/doctors/{doctorId}": {
+      "schema": "Doctor",
+      "description": "Coleção de médicos cadastrados"
+    },
+    "/patients/{patientId}": {
+      "schema": "Patient",
+      "description": "Coleção de pacientes da clínica"
+    },
+    "/appointments/{appointmentId}": {
+      "schema": "Appointment",
+      "description": "Coleção de consultas médicas"
+    }
+  }
+}

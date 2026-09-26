@@ -1,0 +1,6 @@
+{
+  "name": "MedAgenda - Sistema de Gestão de Consultas Médicas",
+  "description": "Sistema moderno e completo para agendamento de consultas, gestão de pacientes, médicos, especialidades e agenda clínica.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
